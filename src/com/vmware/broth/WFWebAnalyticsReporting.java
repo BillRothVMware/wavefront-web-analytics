@@ -164,8 +164,8 @@ public class WFWebAnalyticsReporting {
             sendStr += " " + java.time.Instant.now().getEpochSecond();
             // append source
             sendStr += " source=java";
-            
-            System.out.println(sendStr);
+            WavefrontProxy wf = new WavefrontProxy("10.140.44.31");
+            wf.send(send, value, tags, source);
           }
         }
       }
