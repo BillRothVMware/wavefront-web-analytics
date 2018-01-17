@@ -1,3 +1,4 @@
+package com.vmware.broth;
 /**
  * Location of sample: https://developers.google.com/analytics/devguides/reporting/core/v4/quickstart/service-java
  */
@@ -39,12 +40,20 @@ import com.google.api.services.analyticsreporting.v4.model.ReportRow;
  * @since 1/16/2018
  *
  */
+
 public class WFWebAnalyticsReporting {
   private static final String APPLICATION_NAME = "Hello Analytics Reporting";
   private static final JsonFactory JSON_FACTORY = GsonFactory.getDefaultInstance();
   private static final String KEY_FILE_LOCATION = "service-account-credentials.json";
   private static final String VIEW_ID = "89623538";
+  private static final String METRICS_NAMESPACE = "broth.work.marketing.analytics.web";
   
+  
+  /**
+   * @author broth
+   *
+   */
+  //TODO: Set up OptionBuilder
   
   public static void main(String[] args) {
     try {
@@ -101,7 +110,8 @@ public class WFWebAnalyticsReporting {
         .setViewId(VIEW_ID)
         .setDateRanges(Arrays.asList(dateRange))
         .setMetrics(Arrays.asList(sessions))
-        .setDimensions(Arrays.asList(pageTitle));
+        // .setDimensions(Arrays.asList(pageTitle));
+        ;
 
     ArrayList<ReportRequest> requests = new ArrayList<ReportRequest>();
     requests.add(request);
@@ -139,15 +149,23 @@ public class WFWebAnalyticsReporting {
         List<String> dimensions = row.getDimensions();
         List<DateRangeValues> metrics = row.getMetrics();
 
-        for (int i = 0; i < dimensionHeaders.size() && i < dimensions.size(); i++) {
-          System.out.println(dimensionHeaders.get(i) + ": " + dimensions.get(i));
-       	}
+//        for (int i = 0; i < dimensionHeaders.size() && i < dimensions.size(); i++) {
+//          System.out.println(dimensionHeaders.get(i) + ": " + dimensions.get(i));
+//       	}
 
+        String sendStr;
+        
         for (int j = 0; j < metrics.size(); j++) {
-          System.out.print("Date Range (" + j + "): ");
+          sendStr = METRICS_NAMESPACE;
           DateRangeValues values = metrics.get(j);
           for (int k = 0; k < values.getValues().size() && k < metricHeaders.size(); k++) {
-            System.out.println(metricHeaders.get(k).getName() + ": " + values.getValues().get(k));
+            sendStr += metricHeaders.get(k).getName() + " " + values.getValues().get(k);
+            // Append epoch seconds
+            sendStr += " " + java.time.Instant.now().getEpochSecond();
+            // append source
+            sendStr += " source=java";
+            
+            System.out.println(sendStr);
           }
         }
       }
