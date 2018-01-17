@@ -42,11 +42,11 @@ import com.google.api.services.analyticsreporting.v4.model.ReportRow;
  */
 
 public class WFWebAnalyticsReporting {
-  private static final String APPLICATION_NAME = "Hello Analytics Reporting";
+  private static final String APPLICATION_NAME = "Google Analytics Reporting";
   private static final JsonFactory JSON_FACTORY = GsonFactory.getDefaultInstance();
   private static final String KEY_FILE_LOCATION = "service-account-credentials.json";
   private static final String VIEW_ID = "89623538";
-  private static final String METRICS_NAMESPACE = "broth.work.marketing.analytics.web";
+  private static final String METRICS_NAMESPACE = "marketing.analytics.web";
   
   
   /**
@@ -153,19 +153,22 @@ public class WFWebAnalyticsReporting {
 //          System.out.println(dimensionHeaders.get(i) + ": " + dimensions.get(i));
 //       	}
 
-        String sendStr;
+        String metricName;
         
         for (int j = 0; j < metrics.size(); j++) {
-          sendStr = METRICS_NAMESPACE;
+        	metricName = METRICS_NAMESPACE;
           DateRangeValues values = metrics.get(j);
           for (int k = 0; k < values.getValues().size() && k < metricHeaders.size(); k++) {
-            sendStr += metricHeaders.get(k).getName() + " " + values.getValues().get(k);
-            // Append epoch seconds
-            sendStr += " " + java.time.Instant.now().getEpochSecond();
-            // append source
-            sendStr += " source=java";
-            WavefrontProxy wf = new WavefrontProxy("10.140.44.31");
-            wf.send(send, value, tags, source);
+        	  metricName += "." + metricHeaders.get(k).getName();
+        	  WavefrontProxy wf = new WavefrontProxy("10.140.44.31");
+        	  if(!wf.send(metricName, Double.parseDouble(values.getValues().get(k)),(long)0,"lang=java","")) {
+        		  // 
+        		  System.out.println("error");
+        	  } else {
+        		  // done
+        		  return;
+        	  }
+        	  
           }
         }
       }

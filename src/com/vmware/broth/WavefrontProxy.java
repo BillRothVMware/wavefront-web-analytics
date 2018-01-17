@@ -17,32 +17,47 @@ public class WavefrontProxy {
 		return;
 	}
 	
-	public boolean send(String sMetricName,  double value, String tags, String source) {
+	public boolean send(String sMetricName,  double value, long eTime, String tags, String source) {
 		
 		if(sMetricName.isEmpty())
 			return false;
-		Socket clientSocket;
+		Socket serverSocket;
 		try {
-			clientSocket = new Socket(sHostname, port);
-			PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
+			serverSocket = new Socket(sHostname, port);
+			DataOutputStream out = new DataOutputStream(serverSocket.getOutputStream());
 			
+			// MetricName
 			String sendStr = sMetricName + " " + String.valueOf(value);
+			// insert time
+			if(eTime == 0)
+				sendStr += " " + String.valueOf(java.time.Instant.now().getEpochSecond());
+			else {
+				sendStr += " " + String.valueOf(eTime);
+			}
+
+			// insert tags, if any
 			if (!tags.isEmpty()) {
 				sendStr += " " + tags;
 			}
-			sendStr += " " + "source=" + source;
 			
+			// insert Source
+			// MAKE sure to use the \n. Doesn't work without it.
+			//
+			sendStr += " " + "source=java\n";
 			
-			out.write(sendStr);    
-			    
+			out.writeBytes(sendStr);
+			
+			out.flush();
+			
 		    out.close();
-		    clientSocket.close();
+		    serverSocket.close();
+		    
 		} catch (UnknownHostException e) {
-			// TODO Auto-generated catch block
+			
 			e.printStackTrace();
 			return false;
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
+			
 			e.printStackTrace();
 			return false;
 		}
